@@ -1,18 +1,27 @@
-name: Build test
-on:
-  push:
-    branches:
-      - main
+name: LLVM Toolchain
+on: 
+  workflow_dispatch:
+  schedule:
+    - cron:  '0 17 * * 3'
+
 jobs:
-  build-test:
+  build:
     runs-on: ubuntu-latest
+    environment: Actions
     steps:
-    - uses: actions/checkout@v2
-    - name: Install dependencies
-      run: bash ci.sh deps
-    - name: Build LLVM
-      run: bash ci.sh llvm
-    - name: Build binutils
-      run: bash ci.sh binutils
-    - name: Build kernel
-      run: bash ci.sh kernel
+      - name: Download scripts
+        uses: actions/checkout@v3
+
+      - name: Get deps
+        run: ./ci.sh deps
+
+      - name: Deploy builder
+        env:
+          LLVM_NAME: ${{ secrets.LLVM_NAME}}
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          GH_USERNAME: ${{ secrets.GH_USERNAME }}
+          GH_EMAIL: ${{ secrets.GH_EMAIL }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_PUSH_REPO_URL: ${{ secrets.GH_PUSH_REPO_URL }}
+        run: ./build-tc.sh
